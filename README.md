@@ -70,4 +70,4 @@ way — while the extension is installed. The event is cancelable: call `prevent
 to suppress the default marker and draw your own. See `API.md` for the event contract,
 and `examples/` for two small listeners (`log-detections.js`, `custom-badge.js`).
 
-The extension is not yet published on the Chrome Web Store.
+The extension is submitted to the Chrome Web Store and is in review.
