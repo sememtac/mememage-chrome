@@ -9,7 +9,7 @@ Publisher: **Catmemes** · Contact: andy.xiao@gmail.com · Privacy: https://meme
 The store title comes from the package (`manifest.json` name) = **Mememage**.
 
 ## Summary  (from the package `manifest.json` description — max 132 chars)
-`Spot and verify Mememage-marked images while you browse. A sticker marks each one. Everything runs in your browser.`
+`Spot and verify Mememage-marked images while you browse. A marker appears on each one. Everything runs in your browser.`
 
 (115 chars. Scoped to Mememage-marked images — the extension only acts on images
 that carry a Mememage bar, so a broad "image provenance" claim would overreach.)
@@ -27,14 +27,14 @@ English
 
 Spot Mememage-marked images, and verify them — without leaving the page.
 
-A Mememage bar is a tiny 2-pixel mark at the bottom of an image. It carries an identifier and a content hash that point to the image's record. This extension reads that bar and puts a small sticker on any image that has one. Click the sticker to check the image against its record.
+A Mememage bar is a tiny 2-pixel mark at the bottom of an image. It carries an identifier and a content hash that point to the image's record. This extension reads that bar and puts a small marker on any image that has one. Click the marker to check the image against its record.
 
 Everything runs in your browser, by math alone. No account. No sign-in. No tracking.
 
 WHAT YOU SEE
 
-• A small sticker appears on any image that carries a Mememage bar — on any site.
-• Click the sticker to see the image's identifier and content hash, and to verify it.
+• A small marker appears on any image that carries a Mememage bar — on any site.
+• Click the marker to see the image's identifier and content hash, and to verify it.
 • Right-click any image and choose "Verify with Mememage" for a deeper scan that also finds moved or pasted bars.
 
 THE VERDICTS
@@ -69,10 +69,10 @@ The extension has one purpose: to detect and verify Mememage provenance bars in 
 ## Permission justifications  (paste each into the matching field)
 
 **Host permission — all sites (`<all_urls>`):**
-The extension marks and verifies images that carry a Mememage bar on any page the user visits. To do this, it reads image pixels on those pages to decode the bar. It reads image data only. It does not read page text, form input, or browsing history. Broad host access is required for two reasons. Provenance images can appear on any site. The sticker is also passive, and it must work on every site without per-site activation by the user.
+The extension marks and verifies images that carry a Mememage bar on any page the user visits. To do this, it reads image pixels on those pages to decode the bar. It reads image data only. It does not read page text, form input, or browsing history. Broad host access is required for two reasons. Provenance images can appear on any site. The marker is also passive, and it must work on every site without per-site activation by the user.
 
 **Storage:**
-Saves the user's settings on their machine: the record sources, the per-source timeout, the sticker mode, and the anchor side. Nothing is sent anywhere.
+Saves the user's settings on their machine: the record sources, the per-source timeout, the marker mode, and the anchor side. Nothing is sent anywhere.
 
 **Context menus:**
 Adds the right-click "Verify with Mememage" item, which runs a deeper scan of the selected image.
@@ -105,7 +105,7 @@ Certifications (check all three):
 ## Assets checklist
 
 - Icon: 128×128 (icons/icon128.png) — in the package.
-- Screenshots: 1280×800 — store/screenshots/ (1 genesis + IDENTIFIED card, 2 genesis + sticker, 3 popup, 4 VERIFIED on an open-model record). Order 1-4.
+- Screenshots: 1280×800 — store/screenshots/ (1 genesis + IDENTIFIED card, 2 genesis + marker, 3 popup, 4 VERIFIED on an open-model record). Order 1-4.
 - Small promo tile 440×280: TODO (optional but recommended).
 - Marquee 1400×560: optional, skip.
 - Package: build with `bash build-store-zip.sh` → store/mememage-chrome-1.0.0.zip.

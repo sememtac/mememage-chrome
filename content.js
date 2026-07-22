@@ -1,12 +1,12 @@
 // Mememage extension — UI (content script, loads after detector.js).
 //
 // A CONSUMER of window.MememageDetector. The detector finds bars and reports where
-// they are; this file draws the stickers and the command card. It owns the overlay,
-// hover, the active-sticker state, and the card (verify / fetch record / options).
+// they are; this file draws the markers and the command card. It owns the overlay,
+// hover, the active-marker state, and the card (verify / fetch record / options).
 // No bar logic and no detection here — see detector.js. Verify and fetch record are
 // the RESOLVER's job (they message the SW), not the detector's; the UI calls them.
 //
-// The card is the UX interface: click a sticker -> a minimal card with the identifier
+// The card is the UX interface: click a marker -> a minimal card with the identifier
 // + hash and all commands right there. Explanations live behind collapsibles. Click
 // anywhere else to dismiss (hover never dismisses); Escape too. The card is
 // window-aware: it re-clamps into the viewport whenever it grows or the window resizes.
@@ -18,7 +18,7 @@
   if (!D) return;                                    // detector.js must load first
 
   // User-facing copy in Simplified Technical English: short sentences, active voice,
-  // consistent terms (sticker / bar / record / source / image). See feedback memory.
+  // consistent terms (marker / bar / record / source / image). See feedback memory.
   var VERDICTS = {
     verified:    { word: "VERIFIED",    color: "#7bc4a0",
       why: "The record matches this image by content hash. The data is intact, and it matches these pixels." },
@@ -52,7 +52,7 @@
     ".stk{position:fixed;width:16px;height:16px;cursor:pointer;pointer-events:auto;",
     "  box-shadow:0 2px 7px rgba(0,0,0,.55);opacity:0;transform:translateY(14px) scale(1);",
     "  transition:opacity .2s ease-out,transform .38s cubic-bezier(.34,1.55,.4,1)}",
-    // .down = the sticker sits BELOW a top-of-frame bar and slides DOWN out of it. Order
+    // .down = the marker sits BELOW a top-of-frame bar and slides DOWN out of it. Order
     // matters: .stk.on (resting) is defined AFTER .stk.down so it wins for the settled state.
     ".stk.down{transform:translateY(-14px) scale(1)}",
     ".stk.on{opacity:.95;transform:translateY(0) scale(1)} .stk.on:hover{opacity:1;transform:translateY(0) scale(1.1)}",
@@ -90,27 +90,27 @@
   }
   mountHost();
 
-  // ---- settings (UI: sticker mode + anchor side) ----
-  var stickerMode = "hover";             // hover (default) | always | off
-  var stickerSide = "right";             // color barrier to anchor on: left (M/Y/C) | right (C/Y/M)
+  // ---- settings (UI: marker mode + anchor side) ----
+  var markerMode = "hover";             // hover (default) | always | off
+  var markerSide = "right";             // color barrier to anchor on: left (M/Y/C) | right (C/Y/M)
   function normMode(cfg) {
-    if (cfg.stickerMode === "always" || cfg.stickerMode === "off" || cfg.stickerMode === "hover")
-      return cfg.stickerMode;
-    if (cfg.stickers === false) return "off";        // legacy boolean migration
+    if (cfg.markerMode === "always" || cfg.markerMode === "off" || cfg.markerMode === "hover")
+      return cfg.markerMode;
+    if (cfg.markers === false) return "off";        // legacy boolean migration
     return "hover";
   }
   try {
-    chrome.storage.sync.get({ stickerMode: null, stickers: null, side: "right" }, function (cfg) {
-      stickerMode = normMode(cfg);
-      stickerSide = cfg.side === "left" ? "left" : "right";
+    chrome.storage.sync.get({ markerMode: null, markers: null, side: "right" }, function (cfg) {
+      markerMode = normMode(cfg);
+      markerSide = cfg.side === "left" ? "left" : "right";
       refreshAll();
     });
     chrome.storage.onChanged.addListener(function (ch, area) {
       if (area !== "sync") return;
-      if (ch.stickerMode) stickerMode = normMode({ stickerMode: ch.stickerMode.newValue });
-      if (ch.stickers) stickerMode = normMode({ stickers: ch.stickers.newValue });
-      if (ch.side) stickerSide = ch.side.newValue === "left" ? "left" : "right";
-      if (ch.stickerMode || ch.stickers || ch.side) refreshAll();
+      if (ch.markerMode) markerMode = normMode({ markerMode: ch.markerMode.newValue });
+      if (ch.markers) markerMode = normMode({ markers: ch.markers.newValue });
+      if (ch.side) markerSide = ch.side.newValue === "left" ? "left" : "right";
+      if (ch.markerMode || ch.markers || ch.side) refreshAll();
     });
   } catch (e) { /* storage unavailable (rare) — defaults hold */ }
 
@@ -126,13 +126,13 @@
     });
   }
 
-  // ---- stickers (subscribe to the detector) ----
+  // ---- markers (subscribe to the detector) ----
   // One image can carry SEVERAL bars — each gets its own badge, on its own barrier.
   var tracked = new Map();   // element -> { badges: [{el, bar}], hover, graceTimer }
   var activeBadge = null;    // the badge whose card is open — stays visible past mouseleave
 
   function positionOne(el, bar, badgeEl, visibleWanted) {
-    var p = D.place(el, bar, stickerSide);
+    var p = D.place(el, bar, markerSide);
     if (!p.onScreen || (!visibleWanted && badgeEl !== activeBadge)) {
       badgeEl.classList.remove("on");
       badgeEl.style.pointerEvents = "none";
@@ -145,7 +145,7 @@
     badgeEl.classList.add("on");
   }
   function positionBadges(el, t) {
-    var visible = el.isConnected && (stickerMode === "always" || (stickerMode === "hover" && t.hover));
+    var visible = el.isConnected && (markerMode === "always" || (markerMode === "hover" && t.hover));
     for (var i = 0; i < t.badges.length; i++) positionOne(el, t.badges[i].bar, t.badges[i].el, visible);
   }
   function refreshAll() {
@@ -210,7 +210,7 @@
   function closeCard() {
     if (cardRO) { cardRO.disconnect(); cardRO = null; }
     if (card) { card.remove(); card = null; cardAnchor = null; }
-    if (activeBadge) { activeBadge = null; refreshAll(); }   // let the held sticker follow hover again
+    if (activeBadge) { activeBadge = null; refreshAll(); }   // let the held marker follow hover again
   }
   function esc(s) { return String(s == null ? "" : s).replace(/&/g, "&amp;").replace(/</g, "&lt;"); }
 
@@ -315,7 +315,7 @@
   document.addEventListener("keydown", function (ev) { if (ev.key === "Escape") closeCard(); }, true);
 
   // ---- right-click entry (message from the SW) ----
-  // Ask the detector to deep-decode the URL (it stickers on success), then open the card
+  // Ask the detector to deep-decode the URL (it markers on success), then open the card
   // on the bottom-most bar. The detector owns the decode; the UI owns the card.
   chrome.runtime.onMessage.addListener(function (msg) {
     if (!msg || msg.t !== "mm-verify-at" || !msg.url) return;

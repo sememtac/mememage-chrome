@@ -75,7 +75,7 @@ def main():
     # 5. MULTI-BAR — an image carrying TWO bars from different parties. Mint an inner
     #    piece (its own bottom bar), paste it into a taller canvas so that bar lands
     #    mid-image, then stamp the composite (a second bar at the bottom). extract_bars
-    #    finds both, at different rows — the extension should sticker each one.
+    #    finds both, at different rows — the extension should marker each one.
     inner = mememage.encode(art(760, 300, 5), {"title": "inner piece", "by": "party-A", "n": 5})
     comp = Image.new("RGB", (760, 620))
     comp.paste(art(760, 620, 6), (0, 0))
@@ -84,28 +84,28 @@ def main():
                             out=os.path.join(TP, "img", "multibar.png"))
     save_record(inner.record)
     save_record(outer.record)
-    cards.append(("multibar.png", "№5 — TWO bars (inner + composite) → a sticker per bar"))
+    cards.append(("multibar.png", "№5 — TWO bars (inner + composite) → a marker per bar"))
 
     # 6. RESOLUTION MISMATCH — the SW's fetch() decodes a TALLER version than the <img>
     #    displays (responsive/CDN resize keyed on request headers). testserver.py serves
-    #    mismatch_tall.png to fetch() and mismatch_short.png to the <img>. The sticker
+    #    mismatch_tall.png to fetch() and mismatch_short.png to the <img>. The marker
     #    must still land on the rendered image's bar (fraction mapping, not naturalHeight).
     #    Different WIDTH and height: the display is the true 1024x1024 (barrier ~24px at
     #    its native res); the SW fetches a 768x768 downscale. Both decode to the same
-    #    identifier. The sticker's barrier must be 12px from the DISPLAY's edge (scaled by
+    #    identifier. The marker's barrier must be 12px from the DISPLAY's edge (scaled by
     #    naturalWidth), and the bar's bottom/edge from the SW fraction.
     mm = mememage.encode(art(1024, 1024, 7), {"title": "resolution mismatch", "by": "testpage", "n": 7},
                          out=os.path.join(TP, "img", "mismatch_disp.png"))
     save_record(mm.record)
     Image.open(os.path.join(TP, "img", "mismatch_disp.png")).resize((768, 768), Image.LANCZOS) \
         .save(os.path.join(TP, "img", "mismatch_sw.png"))
-    # A static mismatch.png so PLAIN http.server shows a sticker (no real mismatch — both
+    # A static mismatch.png so PLAIN http.server shows a marker (no real mismatch — both
     # get 1024). testserver.py INTERCEPTS this path and serves the SW the 768 copy, which
     # is what makes it a true resolution-mismatch test. Run testserver.py for that.
     Image.open(os.path.join(TP, "img", "mismatch_disp.png")).save(os.path.join(TP, "img", "mismatch.png"))
 
     # 7. OFFSET BAR — a barred image pasted into a LARGER canvas, so the bar sits inside
-    #    the canvas, not at its edge (enlarged canvas / paste-in). The sticker must land
+    #    the canvas, not at its edge (enlarged canvas / paste-in). The marker must land
     #    on the bar's ACTUAL barrier (its detected left/right), not the canvas edge.
     ob = mememage.encode(art(500, 300, 8), {"title": "offset bar", "by": "testpage", "n": 8})
     canvas = Image.new("RGB", (900, 520))
@@ -115,15 +115,15 @@ def main():
     save_record(ob.record)
 
     # 8. VERY WIDE — for the pillarbox + object-position cases below (a wide image
-    #    left-aligned in an even-wider box threw the sticker into the right margin).
+    #    left-aligned in an even-wider box threw the marker into the right margin).
     wide = mememage.encode(art(1800, 420, 11), {"title": "very wide", "by": "testpage", "n": 11},
                            out=os.path.join(TP, "img", "wide.png"))
     save_record(wide.record)
 
     # 9. TOP-OF-FRAME BAR — a readable bar placed HIGH in the frame (crop the bar strip
-    #    and paste it near the top of a taller canvas). Sitting the sticker above it would
+    #    and paste it near the top of a taller canvas). Sitting the marker above it would
     #    clip off the top, so placement must flip: sit BELOW the bar and slide DOWN,
-    #    keeping the sticker inside the canvas.
+    #    keeping the marker inside the canvas.
     tb = mememage.encode(art(640, 360, 3), {"title": "top bar", "by": "testpage", "n": 3})
     strip = tb.image.crop((0, 360 - 18, 640, 360))       # bar + a few reference rows above it
     tbc = Image.new("RGB", (640, 600))
@@ -160,19 +160,19 @@ def main():
   <h1>Mememage extension — test page</h1>
   <div class="lead"><p style="color:#c8c8cc">Every scenario in one place, for eyeballing. Load the extension
   unpacked, open its popup, set <b>Record source</b> to <code>http://localhost:8017/records</code> and
-  <b>Stickers: always</b>. Green notes are what to expect; amber notes are known gaps.</p></div>
+  <b>Markers: always</b>. Green notes are what to expect; amber notes are known gaps.</p></div>
 
   <h2>1 · Core verdicts</h2>
-  <p class="want">want: a sticker per bar; click to verify (VERIFIED / ALTERED / UNSUPPORTED). №4 no bar. №5 two bars.</p>
+  <p class="want">want: a marker per bar; click to verify (VERIFIED / ALTERED / UNSUPPORTED). №4 no bar. №5 two bars.</p>
   <div class="grid">{{FIGS}}</div>
 
   <h2>2 · Letterbox (object-fit: contain)</h2>
-  <p class="want">want: sticker on the rendered image's barrier, inset from the black element edge.</p>
+  <p class="want">want: marker on the rendered image's barrier, inset from the black element edge.</p>
   <div class="box" style="width:640px;max-width:100%;height:300px">
     <img id="letterbox" src="img/verified.png" style="width:100%;height:100%;object-fit:contain" alt=""></div>
 
   <h2>3 · Lightbox geometries (pillarbox / letterbox / big-margin multibar)</h2>
-  <p class="want">want: each image's sticker(s) on its own rendered barrier.</p>
+  <p class="want">want: each image's marker(s) on its own rendered barrier.</p>
   <div class="lb box" style="width:900px;max-width:100%;height:420px">
     <img class="lbimg" src="img/multibar.png" style="width:100%;height:100%;object-fit:contain" alt=""></div>
   <div class="lb box" style="width:420px;max-width:100%;height:560px;margin-top:1rem">
@@ -181,31 +181,31 @@ def main():
     <img class="lbimg" src="img/verified.png" style="width:100%;height:100%;object-fit:contain" alt=""></div>
 
   <h2>4 · object-position (wide image pushed to one side)</h2>
-  <p class="want">want: the sticker follows the image, never sits in the empty margin.</p>
+  <p class="want">want: the marker follows the image, never sits in the empty margin.</p>
   <div class="lbpos box" style="width:1100px;max-width:100%;height:150px">
     <img class="lbposimg" src="img/wide.png" style="width:100%;height:100%;object-fit:contain;object-position:left" alt=""></div>
   <div class="lbpos box" style="width:1100px;max-width:100%;height:150px;margin-top:1rem">
     <img class="lbposimg" src="img/wide.png" style="width:100%;height:100%;object-fit:contain;object-position:right" alt=""></div>
 
   <h2>5 · Resolution mismatch (SW decodes a different size than displayed)</h2>
-  <p class="want">want: sticker on the barrier both axes — the server hands the SW a 768px copy, the page a 1024px one.</p>
+  <p class="want">want: marker on the barrier both axes — the server hands the SW a 768px copy, the page a 1024px one.</p>
   <img id="mismatch" src="img/mismatch.png" style="width:400px;max-width:100%;height:auto" alt="">
 
   <h2>6 · Offset bar (pasted into a larger canvas)</h2>
-  <p class="want">want: sticker on the bar's actual barrier inside the canvas (x 230..730 of 900), not the corner.</p>
+  <p class="want">want: marker on the bar's actual barrier inside the canvas (x 230..730 of 900), not the corner.</p>
   <img id="offset" src="img/offset.png" style="width:600px;max-width:100%;height:auto" alt="">
 
   <h2>7 · Top-of-frame bar (slide flips DOWN)</h2>
-  <p class="want">want: bar is high in the frame, so the sticker sits BELOW it and slides down — never clips off the top.</p>
+  <p class="want">want: bar is high in the frame, so the marker sits BELOW it and slides down — never clips off the top.</p>
   <img id="topbar" src="img/topbar.png" style="width:400px;max-width:100%;height:auto" alt="">
 
   <h2>8 · Dynamic &lt;img&gt; (the common real-web patterns)</h2>
-  <p>Press the buttons and watch. A stale card/sticker should also update on a swap.</p>
+  <p>Press the buttons and watch. A stale card/marker should also update on a swap.</p>
   <div class="row">
     <div>
       <img id="lazy" style="width:300px;height:190px;background:#141418;border-radius:8px" alt="">
       <button onclick="mmLazy()">lazy-load: set src</button>
-      <div class="want">want: sticker appears when the real src arrives.</div>
+      <div class="want">want: marker appears when the real src arrives.</div>
     </div>
     <div>
       <img id="carousel" src="img/plain.png" style="width:300px;display:block" alt="">
@@ -214,24 +214,24 @@ def main():
     </div>
     <div id="spa-slot">
       <button onclick="mmSpa()">SPA: add image</button>
-      <div class="want">want: a stickered image appears below.</div>
+      <div class="want">want: a markered image appears below.</div>
     </div>
   </div>
   <div style="margin-top:1rem">
     <img id="srcset" srcset="img/multibar.png" style="width:300px;display:block" alt="">
-    <div class="want">srcset: two stickers (multibar via srcset).</div>
+    <div class="want">srcset: two markers (multibar via srcset).</div>
   </div>
 
   <h2>9 · Non-&lt;img&gt; surfaces</h2>
-  <p class="want">want: both stickered too — a &lt;canvas&gt; is re-encoded for the SW; a background-image is fetched by its URL.</p>
+  <p class="want">want: both markered too — a &lt;canvas&gt; is re-encoded for the SW; a background-image is fetched by its URL.</p>
   <div class="row">
     <div>
       <div id="bgdiv" style="width:300px;height:191px;background:url(img/verified.png) center/cover;border-radius:8px"></div>
-      <div class="want">CSS background-image (verified) — one sticker</div>
+      <div class="want">CSS background-image (verified) — one marker</div>
     </div>
     <div>
       <canvas id="cv" style="width:300px;height:auto;display:block;border-radius:8px"></canvas>
-      <div class="want">&lt;canvas&gt; (multibar drawn 1:1) — two stickers</div>
+      <div class="want">&lt;canvas&gt; (multibar drawn 1:1) — two markers</div>
     </div>
   </div>
 

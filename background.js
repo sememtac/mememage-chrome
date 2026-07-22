@@ -10,7 +10,7 @@
 //     fetchrec. Owns the sources + timeout config.
 //
 // Two-tier scanning (the performance contract from docs/plans/extension.md):
-//   fast scan  — passive sticker detection: bottom-anchored decode only ({scan:false}),
+//   fast scan  — passive marker detection: bottom-anchored decode only ({scan:false}),
 //                min-size gate, per-URL cache. Cheap; runs as images enter the viewport.
 //   deep scan  — explicit right-click: the full vertical/anywhere scan (SDK default),
 //                catches relocated / pasted bars.
@@ -45,9 +45,9 @@ async function pixelsFor(url) {
 
 // ===== DECODE-PROXY (for the detector) — decode pixels to bars; no records =====
 // Passive pass: find EVERY bar in the image, each with its vertical position, so the
-// content script can sticker each one where it sits. extractBars is the deep scan (it
+// content script can marker each one where it sits. extractBars is the deep scan (it
 // runs the same edge + anywhere passes as a right-click) — an image can be stamped by
-// more than one party, and a single sticker would hide that. bottomRow is the bar's
+// more than one party, and a single marker would hide that. bottomRow is the bar's
 // bottom row in NATIVE pixels; the content script maps it to display coords via the
 // <img>'s naturalHeight. (Position is not in the SDK's public decode(allBars) — it
 // comes from extractBars' per-bar bottomRow. Flagged for Andy: if multi-bar-with-

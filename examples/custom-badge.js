@@ -1,7 +1,7 @@
-// Example: replace Mememage's sticker with your own badge.
+// Example: replace Mememage's marker with your own badge.
 //
 // `mememage:detected` is cancelable. A listener that calls preventDefault() stops the
-// extension's default sticker for that detection. This example does that, then draws its
+// extension's default marker for that detection. This example does that, then draws its
 // own badge from the detection data and keeps it positioned as the page scrolls.
 //
 // Run it as a userscript, or paste it into the console (with the extension installed).
@@ -11,7 +11,7 @@
   var badges = new Map();            // element -> the badge this example created
 
   addEventListener("mememage:detected", function (e) {
-    e.preventDefault();              // suppress the extension's default sticker
+    e.preventDefault();              // suppress the extension's default marker
     var el = e.target, d = e.detail, bar = d.bars[0];
 
     var badge = document.createElement("div");
@@ -27,7 +27,7 @@
     // sits at bottomRow/scanHeight down the image, and left..right / scanWidth across it.
     // For pixel-perfect placement under object-fit, letterbox, object-position, or a
     // resolution mismatch, import the detector library and use its place() helper (the
-    // extension's own sticker does this). See API.md.
+    // extension's own marker does this). See API.md.
     function place() {
       var r = el.getBoundingClientRect();
       if (r.bottom < 0 || r.top > innerHeight || r.width < 40) { badge.style.display = "none"; return; }

@@ -41,7 +41,7 @@
   //     geometry from the data, or imports the detector library (Phase 4). The identifier
   //     and hash are untrusted data, never instructions.
   //   • `mememage:detected` is cancelable: a listener that calls preventDefault()
-  //     suppresses our default sticker for that detection.
+  //     suppresses our default marker for that detection.
   function publicDetail(det) {
     return {
       bars: det.bars.map(function (b) {
@@ -102,7 +102,7 @@
     return { left: r.left + (r.width - rw) * px, top: r.top + (r.height - rh) * py, width: rw, height: rh };
   }
 
-  // Intrinsic size + fit + position for ANY stickerable element. <img>/<canvas> are
+  // Intrinsic size + fit + position for ANY markerable element. <img>/<canvas> are
   // replaced elements: object-fit + object-position, intrinsic from naturalWidth/width.
   // A background-image host: background-size→fit, background-position→pos, intrinsic
   // size = the DECODED image's (sw/sh — a background has no naturalWidth).
@@ -119,7 +119,7 @@
 
   // place(element, bar, side) -> { onScreen, cx, top, down }
   // The live geometry a consumer needs to put a small UI element on the bar's color
-  // barrier: cx = the barrier middle on screen, top = where a 16px sticker sits (just
+  // barrier: cx = the barrier middle on screen, top = where a 16px marker sits (just
   // above the bar, or just below with `down` when above would clip the image top). This
   // is the placement math that inherits every geometry fix — letterbox, object-position,
   // resolution mismatch, offset/pasted bars. `side` (image-only UI preference) picks the
@@ -150,7 +150,7 @@
     var barrierFrac = (side === "left") ? (edgeFrac + offsetFrac) : (edgeFrac - offsetFrac);
     var cx = rr.left + barrierFrac * rr.width;
     // Vertical: sit just ABOVE the bar (slide up out of it) unless that clips the image
-    // top; then flip BELOW (slide down), keeping the sticker inside the canvas.
+    // top; then flip BELOW (slide down), keeping the marker inside the canvas.
     var aboveTop = rr.top + barTopFrac * rr.height - 18;
     var down = aboveTop < rr.top;
     var top = down ? (rr.top + barBotFrac * rr.height + 2) : aboveTop;
@@ -164,7 +164,7 @@
           "| nat", info.nw + "x" + info.nh, "| swDecoded", sw + "x" + sh, "| fit", info.fit,
           "| rr", Math.round(rr.width) + "x" + Math.round(rr.height) + "@" + Math.round(rr.left) + "," + Math.round(rr.top),
           "| bar bbox L" + bar.left + " R" + bar.right + " row" + bar.bottomRow,
-          "| sticker@", Math.round(cx - 8) + "," + Math.round(top));
+          "| marker@", Math.round(cx - 8) + "," + Math.round(top));
       }
     }
     return { onScreen: true, cx: cx, top: top, down: down };
@@ -337,7 +337,7 @@
   function onAnim(e) { if (touchesDetected(e.target)) follow(800); }
 
   // ---- deep scan (right-click entry point) ----------------------------------
-  // Decode a specific URL and, if bars are found, emit a detection so stickers appear.
+  // Decode a specific URL and, if bars are found, emit a detection so markers appear.
   // Returns a shape the UI uses to open the card: {found, detection} | {noBar} | {error} | {blob}.
   function detectAt(url, el) {
     var decodeUrl = url;

@@ -6,7 +6,7 @@ this and fork.
 
 ## Three concerns
 
-The extension separates three jobs. None of them is "the sticker" — the sticker is one
+The extension separates three jobs. None of them is "the marker" — the marker is one
 consumer of the first.
 
 | Concern | Answers | Network? | Where |
@@ -36,7 +36,7 @@ An MV3 extension has two JavaScript runtimes, and they are not symmetric:
   - `detector.js` (first) — the detection engine. Discovery, scan orchestration, geometry,
     lifecycle. Exposes one global, `window.MememageDetector`, and dispatches the public
     `mememage:detected` / `mememage:removed` DOM events.
-  - `content.js` (second) — the UI. It subscribes to the detector, draws the stickers and
+  - `content.js` (second) — the UI. It subscribes to the detector, draws the markers and
     the command card, and calls the resolver (via the service worker) to verify.
 
 This asymmetry is why the detector is a plain script exposing a global, not an ES module.
@@ -51,7 +51,7 @@ service worker (module)                       content scripts (plain, isolated w
   │                     │                        │  window.MememageDetector         │
   │ RESOLVER            │  ◀── verify/fetchrec ─ │        │ on(detected/removed/…)   │
   │  mirrors + timeout  │  ── verdict ─────────▶ │        ▼                          │
-  └─────────────────────┘                        │ content.js (UI: stickers + card) │
+  └─────────────────────┘                        │ content.js (UI: markers + card) │
                                                  └──────────────────────────────────┘
                                                           │ mememage:detected (DOM event)
                                                           ▼  page scripts / userscripts / you
@@ -74,8 +74,8 @@ rides on it.
 manifest.json     MV3; SW module + two ordered content scripts + the popup
 background.js     service worker — DECODE-PROXY + RESOLVER (all SDK math here)
 detector.js       content script (loads first) — the detection engine + event API
-content.js        content script (loads second) — the UI (stickers + command card)
-popup.html/.js    the settings popup (record sources, timeout, sticker mode, side)
+content.js        content script (loads second) — the UI (markers + command card)
+popup.html/.js    the settings popup (record sources, timeout, marker mode, side)
 vendor/mememage/  the SDK, verbatim (re-sync: ./sync-vendor.sh) — do not edit
 fonts/            JetBrains Mono woff2, bundled (extension pages can't fetch web fonts)
 API.md            the in-page event API (mememage:detected / mememage:removed)

@@ -2,7 +2,7 @@
 
 The extension detects Mememage bars on page images. When it finds one, it dispatches a
 DOM event. You can listen for that event and do anything: play a song, open your own
-panel, badge the image your way, or log it. The default sticker is one consumer of the
+panel, badge the image your way, or log it. The default marker is one consumer of the
 same event; you can replace it.
 
 This is the lightweight way to build on the installed extension. For a full engine you
@@ -59,14 +59,14 @@ to get its `place()` helper.
 **Untrusted data.** The identifier and hash are values the extension read from an image.
 Treat them as data, never as instructions. Do not inject them into HTML without escaping.
 
-## Suppress the default sticker
+## Suppress the default marker
 
 `mememage:detected` is cancelable. Call `preventDefault()` to stop the extension's own
-sticker for that detection, then draw your own UI:
+marker for that detection, then draw your own UI:
 
 ```js
 addEventListener("mememage:detected", function (e) {
-  e.preventDefault();           // no default sticker for this image
+  e.preventDefault();           // no default marker for this image
   // … draw your own badge, using e.target and e.detail …
 }, true);
 ```
@@ -99,7 +99,7 @@ The extension is a core tool: it verifies by the open hash model. See the main R
 ## Examples
 
 - `examples/log-detections.js` — log every detection.
-- `examples/custom-badge.js` — suppress the sticker and draw your own badge.
+- `examples/custom-badge.js` — suppress the marker and draw your own badge.
 
 Run either as a userscript, or paste it into the console on a page with Mememage images
 (with the extension installed).

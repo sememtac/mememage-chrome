@@ -14,23 +14,23 @@
   var savedTimer = null;
 
   chrome.storage.sync.get(
-    { sources: null, source: "", timeoutMs: DEFAULT_TIMEOUT_MS, stickerMode: null, stickers: null, side: "right" },
+    { sources: null, source: "", timeoutMs: DEFAULT_TIMEOUT_MS, markerMode: null, markers: null, side: "right" },
     function (cfg) {
       // `sources` is the current key. Fall back to the legacy single `source`, then
       // to the defaults, so an upgrade keeps the old value and a fresh install sees
       // the two mirrors it already uses.
       srcEl.value = (cfg.sources != null) ? cfg.sources : (cfg.source || DEFAULT_SOURCES);
       toEl.value = Math.round((Number(cfg.timeoutMs) || DEFAULT_TIMEOUT_MS) / 1000);
-      modeEl.value = (cfg.stickerMode === "always" || cfg.stickerMode === "off" || cfg.stickerMode === "hover")
-        ? cfg.stickerMode
-        : (cfg.stickers === false ? "off" : "hover");   // legacy boolean migration
+      modeEl.value = (cfg.markerMode === "always" || cfg.markerMode === "off" || cfg.markerMode === "hover")
+        ? cfg.markerMode
+        : (cfg.markers === false ? "off" : "hover");   // legacy boolean migration
       sideEl.value = cfg.side === "left" ? "left" : "right";
     });
 
   function save() {
     var secs = Math.max(1, Math.min(60, Math.round(Number(toEl.value) || DEFAULT_TIMEOUT_MS / 1000)));
     chrome.storage.sync.set(
-      { sources: srcEl.value, timeoutMs: secs * 1000, stickerMode: modeEl.value, side: sideEl.value },
+      { sources: srcEl.value, timeoutMs: secs * 1000, markerMode: modeEl.value, side: sideEl.value },
       function () {
         savedEl.classList.add("on");
         clearTimeout(savedTimer);

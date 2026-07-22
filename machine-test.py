@@ -6,7 +6,7 @@ Python-minted PNGs (including a genuine TWO-bar composite), real record fetches.
     python3 packaging/extension/machine-test.py
 
 Covers the command-card model plus the multi-bar / centered / hover / window-aware
-behaviors: a sticker per bar centered on the bar, above it; hover-only display
+behaviors: a marker per bar centered on the bar, above it; hover-only display
 (default); per-bar verdicts; fetch link; click-away; no-bar vs couldn't-read
 diagnostics; viewport clamping as the card grows; the toolbar popup settings surface.
 """
@@ -54,7 +54,7 @@ def main():
             def setcfg(js_obj):
                 sw.evaluate("() => chrome.storage.sync.set(%s)" % js_obj)
 
-            setcfg("{ source: 'http://localhost:%d/records', stickerMode: 'always' }" % PORT)
+            setcfg("{ source: 'http://localhost:%d/records', markerMode: 'always' }" % PORT)
 
             # Phase-2 event API: a MAIN-WORLD recorder, injected before any page loads,
             # so it catches the extension's mememage:detected / :removed DOM events (they
@@ -87,7 +87,7 @@ def main():
             # + multibar (TWO) = 5 (off-screen images' badges hide, so measure at top)
             check("a badge per bar in the grid (5, incl. multibar's 2)", n_badges() >= 5)
             src0 = page.get_attribute("mememage-overlay .stk >> nth=0", "src") or ""
-            check("sticker uses the brand icon", "icons/icon32.png" in src0)
+            check("marker uses the brand icon", "icons/icon32.png" in src0)
 
             # placement: every badge's center-x sits on the MIDDLE of the chosen color
             # barrier — 12px (native) in from the image edge, scaled to display.
@@ -108,14 +108,14 @@ def main():
                         if abs(bcx - want) < 2 and b["y"] >= im["top"] - 2 and b["y"] <= im["bottom"]:
                             ok += 1; break
                 return ok
-            check("stickers on the RIGHT barrier middle (default)", on_barrier("right") == 5)
+            check("markers on the RIGHT barrier middle (default)", on_barrier("right") == 5)
             setcfg("{ side: 'left' }")
             page.wait_for_timeout(500)
             check("side=left moves them to the LEFT barrier middle", on_barrier("left") == 5)
             setcfg("{ side: 'right' }")
             page.wait_for_timeout(400)
 
-            # letterbox (object-fit:contain): the sticker must sit on the RENDERED image's
+            # letterbox (object-fit:contain): the marker must sit on the RENDERED image's
             # barrier, inset from the element edge by the pillarbox margin — the mint.
             # mememage.art large-format bug.
             page.evaluate("() => document.getElementById('letterbox').scrollIntoView({block:'center'})")
@@ -139,12 +139,12 @@ def main():
                     if (d < bestd) { bestd = d; best = cx; } }
                 return { best, want, elementEdge, margin: r.right - renderRight };
             }""")
-            check("letterbox: sticker on the rendered image's barrier (not the element edge), margin ~%d" % round(lb["margin"]),
+            check("letterbox: marker on the rendered image's barrier (not the element edge), margin ~%d" % round(lb["margin"]),
                   lb["best"] is not None and abs(lb["best"] - lb["want"]) < 3
                   and abs(lb["best"] - lb["elementEdge"]) > 30)
 
             # every lightbox-repro geometry (pillarbox multibar, letterbox, big-margin):
-            # each image's stickers land on ITS rendered barrier, never the element edge
+            # each image's markers land on ITS rendered barrier, never the element edge
             n_lb = len(page.query_selector_all(".lbimg"))
             all_ok = True; details = []
             for i in range(n_lb):
@@ -167,10 +167,10 @@ def main():
                 if not res or not res["onBarrier"]:
                     all_ok = False
                 details.append(res)
-            check("all lightbox geometries: stickers on rendered barrier — " + str(details), all_ok)
+            check("all lightbox geometries: markers on rendered barrier — " + str(details), all_ok)
 
             # RESOLUTION MISMATCH: the SW decodes mismatch.png at 800x1200 (fetch), the
-            # <img> displays it at 600px tall. The sticker must land on the rendered
+            # <img> displays it at 600px tall. The marker must land on the rendered
             # image's bottom bar via fraction mapping — NOT fly off using naturalHeight.
             page.evaluate("() => document.getElementById('mismatch').scrollIntoView({block:'center'})")
             page.wait_for_timeout(1000)
@@ -184,19 +184,19 @@ def main():
                     .filter(s => s.x>=r.left-6 && s.x<=r.right+6 && s.y>=r.top-40 && s.y<=r.bottom+40);
                 return {natW: img.naturalWidth, natH: img.naturalHeight,
                         imgBottom: Math.round(r.bottom), barrierX: Math.round(barrierX),
-                        stickers: mine.map(s=>({x:Math.round(s.x),y:Math.round(s.y)}))};
+                        markers: mine.map(s=>({x:Math.round(s.x),y:Math.round(s.y)}))};
             }""")
             # SW decodes 768x768, browser displays 1024x1024 (natW=1024). Vertical: the
-            # fraction fix keeps the sticker on the rendered bottom bar. Horizontal: the
+            # fraction fix keeps the marker on the rendered bottom bar. Horizontal: the
             # barrier steps in 12px scaled by naturalWidth (1024), NOT the SW width (768)
             # — the few-px drift Andy saw on large images.
-            on_bar = (len(mm["stickers"]) == 1
-                      and abs(mm["stickers"][0]["y"] - mm["imgBottom"]) < 30
-                      and abs(mm["stickers"][0]["x"] - mm["barrierX"]) < 3)
-            check("resolution mismatch: sticker on the barrier, both axes (natW=%s barrierX=%s stickers=%s)"
-                  % (mm["natW"], mm["barrierX"], mm["stickers"]), on_bar)
+            on_bar = (len(mm["markers"]) == 1
+                      and abs(mm["markers"][0]["y"] - mm["imgBottom"]) < 30
+                      and abs(mm["markers"][0]["x"] - mm["barrierX"]) < 3)
+            check("resolution mismatch: marker on the barrier, both axes (natW=%s barrierX=%s markers=%s)"
+                  % (mm["natW"], mm["barrierX"], mm["markers"]), on_bar)
 
-            # OFFSET BAR: pasted into a 900px canvas at x 230..730. The sticker's
+            # OFFSET BAR: pasted into a 900px canvas at x 230..730. The marker's
             # right-barrier must land at (730-12)/900 of the rendered width — INSIDE the
             # canvas — not at the canvas right edge.
             page.evaluate("() => document.getElementById('offset').scrollIntoView({block:'center'})")
@@ -213,35 +213,35 @@ def main():
                 let best=null, d=1e9; for(const x of mine){const dd=Math.abs(x-barrierX); if(dd<d){d=dd;best=x;}}
                 return {best: best!=null?Math.round(best):null, barrierX:Math.round(barrierX), canvasEdge:Math.round(canvasEdge)};
             }""")
-            check("offset bar: sticker on the bar's barrier inside the canvas, not the edge (barrier@%s edge@%s sticker@%s)"
+            check("offset bar: marker on the bar's barrier inside the canvas, not the edge (barrier@%s edge@%s marker@%s)"
                   % (ob["barrierX"], ob["canvasEdge"], ob["best"]),
                   ob["best"] is not None and abs(ob["best"] - ob["barrierX"]) < 6
                   and abs(ob["best"] - ob["canvasEdge"]) > 30)
 
-            # TRANSITION FOLLOW: shrink the image; the sticker must re-place quickly
+            # TRANSITION FOLLOW: shrink the image; the marker must re-place quickly
             # (ResizeObserver), not lag until the 1200ms interval — the frame-or-two
             # misplacement Andy saw on lightbox size-up.
-            def offset_sticker():
+            def offset_marker():
                 return page.evaluate("""() => {
                     const img = document.getElementById('offset'), r = img.getBoundingClientRect();
                     const barrier = r.left + 717*(r.width/img.naturalWidth);
                     const root = document.querySelector('mememage-overlay').shadowRoot;
                     const s = [...root.querySelectorAll('.stk.on')].map(e=>{const b=e.getBoundingClientRect();return b.x+b.width/2;})
                         .filter(x => x>=r.left-8 && x<=r.right+8);
-                    return {barrier: Math.round(barrier), sticker: s.length?Math.round(s[0]):null};
+                    return {barrier: Math.round(barrier), marker: s.length?Math.round(s[0]):null};
                 }""")
-            before = offset_sticker()
+            before = offset_marker()
             page.evaluate("() => document.getElementById('offset').style.width='300px'")   # shrink
             page.wait_for_timeout(120)                                                       # << the 1200ms interval
-            after = offset_sticker()
-            check("transition follow: sticker re-places on resize within ~120ms (barrier@%s sticker@%s, was @%s)"
-                  % (after["barrier"], after["sticker"], before["sticker"]),
-                  after["sticker"] is not None and abs(after["sticker"] - after["barrier"]) < 4
-                  and after["sticker"] < before["sticker"] - 20)
+            after = offset_marker()
+            check("transition follow: marker re-places on resize within ~120ms (barrier@%s marker@%s, was @%s)"
+                  % (after["barrier"], after["marker"], before["marker"]),
+                  after["marker"] is not None and abs(after["marker"] - after["barrier"]) < 4
+                  and after["marker"] < before["marker"] - 20)
             page.evaluate("() => document.getElementById('offset').style.width='600px'")     # restore
             page.wait_for_timeout(120)
 
-            # OBJECT-POSITION: a wide image pillarboxed left / right. The sticker must
+            # OBJECT-POSITION: a wide image pillarboxed left / right. The marker must
             # follow the image's rendered right-barrier, NOT sit in the empty margin.
             pos_ok = True; pos_detail = []
             for pid in ("left", "right"):
@@ -262,14 +262,14 @@ def main():
                     const mine = [...root.querySelectorAll('.stk.on')].map(e=>{const b=e.getBoundingClientRect();return {x:b.x+b.width/2,y:b.y+b.height/2};})
                         .filter(s => s.y>=r.top-4 && s.y<=r.bottom+4);
                     let near=null,d=1e9; for(const s of mine){const dd=Math.abs(s.x-barrier); if(dd<d){d=dd;near=s.x;}}
-                    return {barrier:Math.round(barrier), sticker:near!=null?Math.round(near):null, rl:Math.round(rl), rw:Math.round(rw)};
+                    return {barrier:Math.round(barrier), marker:near!=null?Math.round(near):null, rl:Math.round(rl), rw:Math.round(rw)};
                 }""", pid)
-                ok = r["sticker"] is not None and abs(r["sticker"] - r["barrier"]) < 6
+                ok = r["marker"] is not None and abs(r["marker"] - r["barrier"]) < 6
                 if not ok: pos_ok = False
                 pos_detail.append((pid, r))
-            check("object-position: sticker follows the image, not the margin — " + str(pos_detail), pos_ok)
+            check("object-position: marker follows the image, not the margin — " + str(pos_detail), pos_ok)
 
-            # TOP-OF-FRAME BAR: placing the sticker above it would clip off the top, so it
+            # TOP-OF-FRAME BAR: placing the marker above it would clip off the top, so it
             # must flip below and slide down — staying fully inside the image.
             page.evaluate("() => document.getElementById('topbar').scrollIntoView({block:'center'})")
             page.wait_for_timeout(900)
@@ -282,21 +282,21 @@ def main():
                     .filter(o => o.b.x+o.b.width/2 >= r.left-8 && o.b.x+o.b.width/2 <= r.right+8);
                 if (!st.length) return {none:true};
                 const s = st[0];
-                return { imgTop: Math.round(r.top), stickerTop: Math.round(s.b.y), stickerBottom: Math.round(s.b.y+s.b.height),
+                return { imgTop: Math.round(r.top), markerTop: Math.round(s.b.y), markerBottom: Math.round(s.b.y+s.b.height),
                          barTopY: Math.round(barTopY), down: s.down };
             }""")
-            # the sticker must NOT clip above the image, must be flagged .down, and must
+            # the marker must NOT clip above the image, must be flagged .down, and must
             # sit BELOW the bar (not above it)
-            check("top bar: sticker flips below & stays in-canvas (down=%s, stickerTop=%s>=imgTop=%s, below bar=%s)"
-                  % (tb.get("down"), tb.get("stickerTop"), tb.get("imgTop"), tb.get("stickerTop",0) > tb.get("barTopY",0)),
+            check("top bar: marker flips below & stays in-canvas (down=%s, markerTop=%s>=imgTop=%s, below bar=%s)"
+                  % (tb.get("down"), tb.get("markerTop"), tb.get("imgTop"), tb.get("markerTop",0) > tb.get("barTopY",0)),
                   (not tb.get("none")) and tb["down"] is True
-                  and tb["stickerTop"] >= tb["imgTop"] - 1
-                  and tb["stickerTop"] > tb["barTopY"])
+                  and tb["markerTop"] >= tb["imgTop"] - 1
+                  and tb["markerTop"] > tb["barTopY"])
             page.evaluate("() => window.scrollTo(0,0)")
             page.wait_for_timeout(400)
 
-            # DYNAMIC <img>: the two common real-web patterns must sticker.
-            def stickers_over(el_id):
+            # DYNAMIC <img>: the two common real-web patterns must marker.
+            def markers_over(el_id):
                 return page.evaluate("""(id) => {
                     const el = document.getElementById(id); if(!el) return -1;
                     const r = el.getBoundingClientRect();
@@ -311,32 +311,32 @@ def main():
                 i.scrollIntoView({block:'center'});
                 setTimeout(()=>{ i.src = base+'altered.png'; }, 300); }""", base)
             page.wait_for_timeout(1600)
-            check("lazy-load: <img> with src set after insert gets stickered (%s)" % stickers_over('mm-lazy'),
-                  stickers_over('mm-lazy') == 1)
+            check("lazy-load: <img> with src set after insert gets markered (%s)" % markers_over('mm-lazy'),
+                  markers_over('mm-lazy') == 1)
             # carousel: an <img> showing a non-bar image, then swapped to a barred one
             page.evaluate("""(base) => { const i=document.createElement('img'); i.id='mm-carousel';
                 i.style.cssText='width:440px;display:block;margin-top:24px'; i.src = base+'plain.png';
                 document.body.appendChild(i); i.scrollIntoView({block:'center'}); }""", base)
             page.wait_for_timeout(1300)
-            before_c = stickers_over('mm-carousel')       # plain.png has no bar
+            before_c = markers_over('mm-carousel')       # plain.png has no bar
             page.evaluate("(base) => document.getElementById('mm-carousel').src = base+'canonical.png'", base)
             page.wait_for_timeout(1600)
-            after_c = stickers_over('mm-carousel')
-            check("carousel: sticker appears after src swaps to a barred image (before=%s after=%s)" % (before_c, after_c),
+            after_c = markers_over('mm-carousel')
+            check("carousel: marker appears after src swaps to a barred image (before=%s after=%s)" % (before_c, after_c),
                   before_c == 0 and after_c == 1)
             page.evaluate("() => { ['mm-lazy','mm-carousel'].forEach(id=>{const e=document.getElementById(id); if(e)e.remove();}); window.scrollTo(0,0); }")
             page.wait_for_timeout(300)
 
             # NEW SURFACES: <canvas> (re-encoded to a data URL for the SW) and CSS
-            # background-image (SW fetches the bg URL) now get stickered too.
+            # background-image (SW fetches the bg URL) now get markered too.
             page.evaluate("() => document.getElementById('cv').scrollIntoView({block:'center'})")
             page.wait_for_timeout(1800)   # toDataURL -> SW fetch/decode (+ retry)
-            check("canvas: mememage drawn to <canvas> gets stickered (%s bars)" % stickers_over('cv'),
-                  stickers_over('cv') == 2)
+            check("canvas: mememage drawn to <canvas> gets markered (%s bars)" % markers_over('cv'),
+                  markers_over('cv') == 2)
             page.evaluate("() => document.getElementById('bgdiv').scrollIntoView({block:'center'})")
             page.wait_for_timeout(1400)
-            check("background-image: CSS-background mememage gets stickered (%s)" % stickers_over('bgdiv'),
-                  stickers_over('bgdiv') == 1)
+            check("background-image: CSS-background mememage gets markered (%s)" % markers_over('bgdiv'),
+                  markers_over('bgdiv') == 1)
 
             # Phase-2 event API: the page's main-world listener received mememage:detected
             # with readable detail (identifier + hash), proving cross-world delivery.
@@ -364,7 +364,7 @@ def main():
                   after_rem > before_rem)
             page.evaluate("() => { const e=document.getElementById('mm-rem'); if(e)e.remove(); window.scrollTo(0,0); }")
             page.wait_for_timeout(300)
-            # preventDefault() on mememage:detected suppresses our default sticker.
+            # preventDefault() on mememage:detected suppresses our default marker.
             page.evaluate("""(base) => {
                 const i = document.createElement('img'); i.id = 'mm-sup';
                 i.style.cssText = 'width:440px;display:block;margin-top:24px';
@@ -373,16 +373,16 @@ def main():
                 i.src = base + 'verified.png';
             }""", base)
             page.wait_for_timeout(1700)
-            sup = stickers_over('mm-sup')
+            sup = markers_over('mm-sup')
             supfired = page.evaluate("() => (window.__mmDetected||[]).some(x => x.id && x.id.startsWith('mememage-'))")
-            check("event API: preventDefault suppresses the sticker (stickers=%s, event still fired=%s)" % (sup, supfired),
+            check("event API: preventDefault suppresses the marker (markers=%s, event still fired=%s)" % (sup, supfired),
                   sup == 0 and supfired)
             page.evaluate("() => { const e=document.getElementById('mm-sup'); if(e)e.remove(); window.scrollTo(0,0); }")
             page.wait_for_timeout(300)
             # blob: <img> (createObjectURL) — the decoder's own preview + lightbox case,
             # and any app that previews a locally-selected file. A blob URL is page-scoped,
             # so the SW can't fetch it; the content script re-encodes the loaded <img> to a
-            # data URL. Fetch a barred PNG, wrap it in a blob URL, expect one sticker.
+            # data URL. Fetch a barred PNG, wrap it in a blob URL, expect one marker.
             page.evaluate("""(base) => {
                 const i = document.createElement('img'); i.id = 'mm-blob';
                 i.style.cssText = 'width:440px;display:block;margin-top:24px';
@@ -390,8 +390,8 @@ def main():
                 fetch(base+'verified.png').then(r=>r.blob()).then(b=>{ i.src = URL.createObjectURL(b); });
             }""", base)
             page.wait_for_timeout(1700)
-            check("blob: <img> (createObjectURL) gets stickered — decoder preview/lightbox (%s)" % stickers_over('mm-blob'),
-                  stickers_over('mm-blob') == 1)
+            check("blob: <img> (createObjectURL) gets markered — decoder preview/lightbox (%s)" % markers_over('mm-blob'),
+                  markers_over('mm-blob') == 1)
             page.evaluate("() => { const e=document.getElementById('mm-blob'); if(e)e.remove(); window.scrollTo(0,0); }")
             page.wait_for_timeout(300)
             page.evaluate("() => window.scrollTo(0,0)")
@@ -401,7 +401,7 @@ def main():
                 page.wait_for_selector("mememage-overlay .card .idl b", timeout=15000)
                 return page.inner_text("mememage-overlay .card .idl b")
 
-            # 1. sticker click -> MINIMAL command card, no auto-verdict
+            # 1. marker click -> MINIMAL command card, no auto-verdict
             badges()[0].click()
             ident = card_ident()
             check("command card shows identifier (no auto-verdict)",
@@ -439,13 +439,13 @@ def main():
             check("the two bars have DIFFERENT identifiers", len(set(idents)) == 2)
             check("both multibar bars verify VERIFIED", verdicts == ["VERIFIED", "VERIFIED"])
 
-            # ACTIVE STICKER: click one of the multibar stickers, then move the mouse off
+            # ACTIVE STICKER: click one of the multibar markers, then move the mouse off
             # the image (hover mode). The clicked one must STAY, its sibling must hide.
-            setcfg("{ stickerMode: 'hover' }")
+            setcfg("{ markerMode: 'hover' }")
             page.mouse.move(10, 850); page.wait_for_timeout(400)
             page.evaluate("() => [...document.querySelectorAll('.grid img')].find(i=>i.src.includes('multibar')).scrollIntoView({block:'center'})")
             page.wait_for_timeout(400)
-            page.hover("img[src*='multibar']")   # reveal both multibar stickers
+            page.hover("img[src*='multibar']")   # reveal both multibar markers
             page.wait_for_timeout(300)
             def multibar_on():
                 return page.evaluate("""() => {
@@ -454,29 +454,29 @@ def main():
                     return [...document.querySelector('mememage-overlay').shadowRoot.querySelectorAll('.stk.on')]
                         .filter(e=>{const b=e.getBoundingClientRect();return Math.abs(b.x+b.width/2-bx)<3 && b.y>=r.top-4 && b.y<=r.bottom;}).length;
                 }""")
-            check("hover reveals both multibar stickers", multibar_on() == 2)
+            check("hover reveals both multibar markers", multibar_on() == 2)
             page.evaluate("""() => {
                 const img = [...document.querySelectorAll('.grid img')].find(i=>i.src.includes('multibar'));
                 const r = img.getBoundingClientRect(), bx = r.right - 12*(r.width/img.naturalWidth);
                 const stks = [...document.querySelector('mememage-overlay').shadowRoot.querySelectorAll('.stk.on')]
                     .filter(e=>{const b=e.getBoundingClientRect();return Math.abs(b.x+b.width/2-bx)<3 && b.y>=r.top-4 && b.y<=r.bottom;})
                     .sort((a,b)=>a.getBoundingClientRect().y-b.getBoundingClientRect().y);
-                stks[0].click();                 // click the TOP bar's sticker
+                stks[0].click();                 // click the TOP bar's marker
             }""")
             page.wait_for_selector("mememage-overlay .card .idl b", timeout=8000)
             page.mouse.move(10, 850)             # move well off the image
             page.wait_for_timeout(500)           # past the hover grace + settle
-            check("active sticker stays after mouseleave; sibling hides (visible=%s, expect 1)" % multibar_on(),
+            check("active marker stays after mouseleave; sibling hides (visible=%s, expect 1)" % multibar_on(),
                   multibar_on() == 1)
             page.keyboard.press("Escape")        # dismiss -> the held one follows hover again
             page.wait_for_timeout(400)
-            check("dismiss releases the held sticker (visible=%s, expect 0 off-image)" % multibar_on(),
+            check("dismiss releases the held marker (visible=%s, expect 0 off-image)" % multibar_on(),
                   multibar_on() == 0)
-            setcfg("{ stickerMode: 'always' }")
+            setcfg("{ markerMode: 'always' }")
             page.wait_for_timeout(400)
 
-            # HOVER = uniform grow, NO vertical shift (so the cursor stays over the sticker).
-            # Move the mouse to an IN-VIEWPORT sticker's center (page.hover can't scroll a
+            # HOVER = uniform grow, NO vertical shift (so the cursor stays over the marker).
+            # Move the mouse to an IN-VIEWPORT marker's center (page.hover can't scroll a
             # fixed overlay into view), then poll until the springy scale settles to ~1.1.
             page.evaluate("() => window.scrollTo(0,0)"); page.wait_for_timeout(500)
             page.mouse.move(10, 850); page.wait_for_timeout(300)
@@ -530,7 +530,7 @@ def main():
             check("fetch record yields an open-record link into the source", "/records/mememage-" in href)
             page.keyboard.press("Escape")
 
-            # 5. plain image: no sticker; right-click -> no-bar; unfetchable -> couldn't-read
+            # 5. plain image: no marker; right-click -> no-bar; unfetchable -> couldn't-read
             def rc(url):
                 sw.evaluate("""async () => {
                     const tabs = await chrome.tabs.query({});
@@ -550,16 +550,16 @@ def main():
 
             # 6. hover mode (default): hidden at rest, one image's badge(s) on hover
             page.mouse.move(10, 600)
-            setcfg("{ stickerMode: 'hover' }")
+            setcfg("{ markerMode: 'hover' }")
             page.wait_for_timeout(500)
-            check("hover mode: stickers hidden at rest", n_badges() == 0)
+            check("hover mode: markers hidden at rest", n_badges() == 0)
             page.hover(".grid figure >> nth=0 >> img")
             page.wait_for_timeout(300)
-            check("hover mode: hovering an image reveals its sticker", n_badges() == 1)
+            check("hover mode: hovering an image reveals its marker", n_badges() == 1)
             page.mouse.move(10, 600)
             page.wait_for_timeout(400)
             check("hover mode: leaving hides it again", n_badges() == 0)
-            setcfg("{ stickerMode: 'always' }")
+            setcfg("{ markerMode: 'always' }")
             page.wait_for_timeout(400)
 
             # 7. window-aware card near the bottom edge, re-clamps as it grows
@@ -600,22 +600,22 @@ def main():
             pop.fill("#timeout", "8")
             pop.select_option("#mode", "off")
             pop.wait_for_timeout(400)
-            saved = sw.evaluate("() => chrome.storage.sync.get(['sources','timeoutMs','stickerMode'])")
+            saved = sw.evaluate("() => chrome.storage.sync.get(['sources','timeoutMs','markerMode'])")
             check("popup saves sources + timeout + mode to storage",
                   saved.get("sources", "").endswith("/records") and saved.get("timeoutMs") == 8000
-                  and saved.get("stickerMode") == "off")
+                  and saved.get("markerMode") == "off")
             pop.close()
 
             page.wait_for_timeout(500)
-            check("stickers off hides all stickers", n_badges() == 0)
+            check("markers off hides all markers", n_badges() == 0)
 
             # 9. mirror fallback + configurable timeout: the first source (the /slow
             #    route, which sleeps past the timeout) is skipped, the lookup falls
             #    through to the working mirror, and the image still VERIFIES — fast,
             #    proving the per-source timeout fired instead of waiting out /slow.
-            #    Runs last: it sets stickerMode 'always', which the "stickers off"
+            #    Runs last: it sets markerMode 'always', which the "markers off"
             #    check above must not see.
-            setcfg("{ sources: 'http://localhost:%d/slow\\nhttp://localhost:%d/records', timeoutMs: 1500, stickerMode: 'always' }" % (PORT, PORT))
+            setcfg("{ sources: 'http://localhost:%d/slow\\nhttp://localhost:%d/records', timeoutMs: 1500, markerMode: 'always' }" % (PORT, PORT))
             page.goto("http://localhost:%d/" % PORT)
             page.wait_for_selector("mememage-overlay .stk.on", timeout=15000)
             page.wait_for_timeout(1200)

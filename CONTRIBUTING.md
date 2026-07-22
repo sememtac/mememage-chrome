@@ -14,7 +14,7 @@ with a default UI. You can contribute here, or build your own thing on top (see 
 ## Run the tests
 
 The machine test loads the real extension into Chromium with Playwright and drives the
-whole flow — stickers, verdicts, the card, dynamic content, the event API. It is the
+whole flow — markers, verdicts, the card, dynamic content, the event API. It is the
 behavioral contract.
 
 ```bash
@@ -43,7 +43,7 @@ fails before your fix and passes after. The test is how we accept outside change
   no records. Record resolution (sources, timeout, verify) is the resolver, in the service
   worker. The UI (`content.js`) draws and calls the resolver. See `ARCHITECTURE.md`.
 - **User-facing copy is Simplified Technical English.** Short sentences, active voice, one
-  term per concept (sticker / bar / record / source / image), no jargon. This covers
+  term per concept (marker / bar / record / source / image), no jargon. This covers
   verdicts, tooltips, error messages, and labels.
 - **Syntax-check Python with `ast`, not `py_compile`.** `py_compile` writes `__pycache__`,
   which Chrome then refuses to load (it rejects `_`-prefixed names). Use
