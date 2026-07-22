@@ -10,7 +10,7 @@ verdict — green VERIFIED on an open-model record (raw API / ComfyUI shape) —
 so the listing demonstrates the extension's strongest signal too.
 
   1. genesis + the command card (IDENTIFIED)
-  2. genesis + just the sticker
+  2. genesis + just the marker
   3. the toolbar popup (record-source mirrors + per-source timeout)
   4. VERIFIED — a real open-model record (core encodes a sample, the extension
      confirms it by hash)
@@ -62,7 +62,7 @@ def serve_dir(d, port):
 
 
 def _verify_card(page):
-    """Click the current in-frame sticker, run verify, wait for the verdict word."""
+    """Click the current in-frame marker, run verify, wait for the verdict word."""
     page.evaluate("""() => {
         const root=document.querySelector('mememage-overlay');
         const on=[...root.shadowRoot.querySelectorAll('.stk.on')];
@@ -99,11 +99,14 @@ def main():
                     if not headless: raise
                     print("(headless SW didn't start — retrying headed:", str(e)[:60], ")")
 
-            sw.evaluate("() => chrome.storage.sync.set({ stickerMode: 'always', side: 'right' })")
+            # Explicit sources for the genesis verify (the tool points them; the
+            # extension ships NO default sources). souls + IA resolve the genesis record.
+            _SRC = "https://souls.mememage.art/\nhttps://archive.org/download/{id}/"
+            sw.evaluate("(s) => chrome.storage.sync.set({ markerMode:'always', side:'right', sources:s })", _SRC)
             page = ctx.new_page()
             page.set_viewport_size({"width": W, "height": H})
 
-            # --- Shots 1-2: genesis (product page lightbox, default souls+IA sources)
+            # --- Shots 1-2: genesis (product page lightbox, explicit souls+IA sources)
             page.goto(PRODUCT, wait_until="networkidle", timeout=45000)
             page.wait_for_timeout(2000)
             page.evaluate("() => { const b=document.getElementById('heroZoom'); if(b) b.click(); }")
@@ -116,13 +119,13 @@ def main():
                     got = True; break
             if got:
                 page.wait_for_timeout(500)
-                f = os.path.join(OUT, "2-sticker.png")
+                f = os.path.join(OUT, "2-marker.png")
                 page.screenshot(path=f); shots.append(f)
                 _verify_card(page)          # genesis -> IDENTIFIED
                 f = os.path.join(OUT, "1-card.png")
                 page.screenshot(path=f); shots.append(f)
             else:
-                print("WARN: genesis lightbox produced no sticker — skipping shots 1-2", file=sys.stderr)
+                print("WARN: genesis lightbox produced no marker — skipping shots 1-2", file=sys.stderr)
 
             # --- Shot 4: VERIFIED on the local open-model record -----------------
             sw.evaluate("() => chrome.storage.sync.set({ sources: 'http://localhost:%d/records' })" % HERO_PORT)

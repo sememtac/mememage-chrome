@@ -85,10 +85,11 @@ async function fastScan(url) {
 // Archive's per-item folder (archive.org/download/{id}/) share one code path
 // (the same convention the decoder and validator use).
 //
-// Defaults (a fresh install, before the user opens the popup) are the two public
-// reference mirrors, so verify works out of the box on mememage.art images. The
-// popup shows the same two lines; clear the field to read identifiers only.
-const DEFAULT_SOURCES = "https://souls.mememage.art/\nhttps://archive.org/download/{id}/";
+// A fresh install ships with NO active sources — the extension expresses no platform
+// preference. The popup shows souls.mememage.art + the Internet Archive form only as
+// GREYED PLACEHOLDER examples (how to point a source), never as live defaults; the user
+// chooses what to add. With no sources set, the extension still detects bars and shows
+// the marker; verify reports "no sources set" until the user adds one.
 const DEFAULT_TIMEOUT_MS = 5000;
 
 function parseSources(raw) {
@@ -97,12 +98,12 @@ function parseSources(raw) {
 
 async function sourceList() {
   // `sources` is the current key. A pre-mirror install stored a single `source`;
-  // seed it as line 1. A never-configured install (both unset) gets the defaults.
+  // seed it as line 1. A never-configured install has no active sources.
   const cfg = await chrome.storage.sync.get({ sources: null, source: "" });
   let raw;
   if (cfg.sources != null) raw = cfg.sources;        // user set it (may be "" = identifiers only)
   else if (cfg.source) raw = cfg.source;             // legacy single source
-  else raw = DEFAULT_SOURCES;                         // fresh install
+  else raw = "";                                      // fresh install: no active sources
   return parseSources(raw);
 }
 

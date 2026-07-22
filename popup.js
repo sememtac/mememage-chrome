@@ -1,9 +1,9 @@
 // Mememage extension — toolbar popup: the whole settings surface. Saves as you type.
 (function () {
   "use strict";
-  // Must match DEFAULT_SOURCES / DEFAULT_TIMEOUT_MS in background.js. A fresh
-  // install shows these two public reference mirrors so verify works out of the box.
-  var DEFAULT_SOURCES = "https://souls.mememage.art/\nhttps://archive.org/download/{id}/";
+  // A fresh install has NO active sources — the field is empty and the popup's
+  // placeholder (souls.mememage.art + the Internet Archive form) shows through as a
+  // greyed how-to example, not a live default. Must match background.js.
   var DEFAULT_TIMEOUT_MS = 5000;
 
   var srcEl = document.getElementById("sources");
@@ -16,10 +16,9 @@
   chrome.storage.sync.get(
     { sources: null, source: "", timeoutMs: DEFAULT_TIMEOUT_MS, markerMode: null, markers: null, side: "right" },
     function (cfg) {
-      // `sources` is the current key. Fall back to the legacy single `source`, then
-      // to the defaults, so an upgrade keeps the old value and a fresh install sees
-      // the two mirrors it already uses.
-      srcEl.value = (cfg.sources != null) ? cfg.sources : (cfg.source || DEFAULT_SOURCES);
+      // `sources` is the current key. Fall back to the legacy single `source`. A fresh
+      // install (neither set) leaves the field empty, so the placeholder shows through.
+      srcEl.value = (cfg.sources != null) ? cfg.sources : (cfg.source || "");
       toEl.value = Math.round((Number(cfg.timeoutMs) || DEFAULT_TIMEOUT_MS) / 1000);
       modeEl.value = (cfg.markerMode === "always" || cfg.markerMode === "off" || cfg.markerMode === "hover")
         ? cfg.markerMode
