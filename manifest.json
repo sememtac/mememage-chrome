@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "Mememage",
   "version": "1.0.0",
-  "description": "See and verify image provenance while you browse. A sticker marks any image with a Mememage bar. Everything runs in your browser.",
+  "description": "Spot and verify Mememage-marked images while you browse. A sticker marks each one. Everything runs in your browser.",
   "permissions": [
     "contextMenus",
     "storage"

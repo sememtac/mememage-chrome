@@ -6,17 +6,16 @@ Publisher: **Catmemes** · Contact: andy.xiao@gmail.com · Privacy: https://meme
 ---
 
 ## Name
-`Mememage — image provenance`
+The store title comes from the package (`manifest.json` name) = **Mememage**.
 
-(Brand-first, with a discovery tail. The item a user runs is "Mememage".)
+## Summary  (from the package `manifest.json` description — max 132 chars)
+`Spot and verify Mememage-marked images while you browse. A sticker marks each one. Everything runs in your browser.`
 
-## Summary  (short description — max 132 chars)
-`See and verify image provenance while you browse. A sticker marks any image with a Mememage bar. Everything runs in your browser.`
-
-(129 chars.)
+(115 chars. Scoped to Mememage-marked images — the extension only acts on images
+that carry a Mememage bar, so a broad "image provenance" claim would overreach.)
 
 ## Category
-**Primary: Privacy & Security.** The extension verifies image integrity and reads provenance — a security/authenticity tool.
+**Primary: Privacy & Security.** The extension verifies image integrity and reads the record a Mememage bar points to — a security/authenticity tool.
 Alternates if that slot is unavailable: **Photos**, then **Developer Tools**.
 
 ## Language
@@ -26,9 +25,9 @@ English
 
 ## Detailed description  (paste into "Description")
 
-See where an image came from — without leaving the page.
+Spot Mememage-marked images, and verify them — without leaving the page.
 
-Mememage is tamper-evident provenance for any image. A tiny 2-pixel bar at the bottom of an image carries an identifier and a content hash. This extension reads that bar and puts a small sticker on any image that has one. Click the sticker to check the image against its record.
+A Mememage bar is a tiny 2-pixel mark at the bottom of an image. It carries an identifier and a content hash that point to the image's record. This extension reads that bar and puts a small sticker on any image that has one. Click the sticker to check the image against its record.
 
 Everything runs in your browser, by math alone. No account. No sign-in. No tracking.
 
