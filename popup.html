@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Mememage</title>
+<style>
+  /* Brand font, bundled so the popup matches the site offline (JetBrains Mono, OFL). */
+  @font-face{font-family:"JetBrains Mono";font-weight:300;font-display:swap;
+    src:url("fonts/JetBrainsMono-300.woff2") format("woff2")}
+  @font-face{font-family:"JetBrains Mono";font-weight:500;font-display:swap;
+    src:url("fonts/JetBrainsMono-500.woff2") format("woff2")}
+  :root{--bg:#0d0d10;--ink:#e4e4e8;--dim:#a0a0a8;--muted:#68686f;--border:rgba(180,180,190,.16);
+        --m:#dc50dc;--y:#dcc83c;--c:#3cc8dc}
+  html,body{margin:0;background:var(--bg)}
+  body{font-family:"JetBrains Mono",ui-monospace,Menlo,Consolas,monospace;color:var(--ink);
+       line-height:1.5;width:300px;padding:16px 16px 14px;font-size:12px;font-weight:300}
+  /* OG-card header: brand icon, then MEMEMAGE wide-tracked light — same as og.png */
+  .brand{display:flex;align-items:center;gap:12px;margin-bottom:16px}
+  .brand img{width:26px;height:26px;display:block}
+  .brand .wordmark{font-weight:300;letter-spacing:.34em;font-size:1.02rem;color:var(--ink)}
+  label{font-size:.68rem;color:var(--dim);display:block;margin-bottom:.3rem;font-weight:300}
+  input[type=text],textarea{width:100%;box-sizing:border-box;font-family:inherit;font-size:.72rem;
+    background:#141418;border:1px solid var(--border);border-radius:6px;color:var(--ink);
+    padding:.5em .7em}
+  input[type=text]::placeholder,textarea::placeholder{color:#4a4a52}
+  textarea{resize:vertical;min-height:3.4em;line-height:1.4}
+  input[type=number]{width:56px;box-sizing:border-box;font-family:inherit;font-size:.72rem;
+    background:#141418;border:1px solid var(--border);border-radius:6px;color:var(--ink);
+    padding:.4em .5em;text-align:right}
+  .help{font-size:.62rem;color:var(--muted);margin-top:.4rem}
+  .help code{background:rgba(180,180,190,.12);padding:.05em .3em;border-radius:3px}
+  .row{display:flex;align-items:center;gap:.6rem;margin-top:.9rem}
+  .row label{margin:0;flex:1}
+  select{font-family:inherit;font-size:.7rem;background:#141418;border:1px solid var(--border);
+    border-radius:6px;color:var(--ink);padding:.4em .5em;font-weight:300}
+  .saved{font-size:.62rem;color:#7bc4a0;margin-top:.7rem;opacity:0;transition:opacity .3s;height:1em}
+  .saved.on{opacity:1}
+</style>
+</head>
+<body>
+  <div class="brand">
+    <img src="icons/icon48.png" alt="">
+    <span class="wordmark">MEMEMAGE</span>
+  </div>
+
+  <label for="sources">Record sources</label>
+  <textarea id="sources" rows="3" spellcheck="false"
+    placeholder="https://souls.mememage.art/&#10;https://archive.org/download/{id}/"></textarea>
+  <p class="help">One per line. The extension tries them top to bottom (mirrors). For each
+  image with a bar, the extension fetches <code>&lt;source&gt;/&lt;id&gt;.json</code>.
+  <code>{id}</code> in a source expands to the identifier. The extension uses the first
+  source that has the record. Leave empty to read identifiers only.</p>
+
+  <div class="row">
+    <label for="timeout">Timeout per source</label>
+    <input type="number" id="timeout" min="1" max="60" step="1" aria-describedby="timeoutUnit">
+    <span id="timeoutUnit" style="font-size:.68rem;color:var(--dim)">s</span>
+  </div>
+
+  <div class="row">
+    <label for="mode">Stickers</label>
+    <select id="mode">
+      <option value="hover">on hover</option>
+      <option value="always">always</option>
+      <option value="off">off</option>
+    </select>
+  </div>
+
+  <div class="row">
+    <label for="side">Anchor on</label>
+    <select id="side">
+      <option value="right">right barrier (C/Y/M)</option>
+      <option value="left">left barrier (M/Y/C)</option>
+    </select>
+  </div>
+
+  <div class="saved" id="saved">saved</div>
+<script src="popup.js"></script>
+</body>
+</html>
