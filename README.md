@@ -4,7 +4,14 @@ See and verify Mememage provenance while you browse. The extension puts a small 
 
 By default, the marker shows only while your cursor is over the image. You can set this to hover, always, or off. The marker sits directly above the bar, centered on a color barrier: the M/Y/C block on the left, or the C/Y/M block on the right. The "anchor on" setting picks which side. An image can carry more than one bar, stamped by different parties at different heights. Each bar gets its own marker, and a click verifies that one bar. The settings are in the **toolbar popup** (click the M/Y/C icon).
 
-**Record sources (mirrors).** The extension looks a record up by its identifier. Set one or more sources in the popup, one per line. The extension tries them top to bottom. It uses the first source that has the record. If one host is down, the next one answers. A record is always verified by its hash against the bar. The source is never trusted. A mirror can only fail to verify. It can never fake a match. Put `{id}` in a source to expand it to the identifier (for example, `https://archive.org/download/{id}/`). Set the per-source timeout to control how long the extension waits before it tries the next source. A fresh install starts with two public mirrors: `souls.mememage.art` and the Internet Archive. Clear the field to read identifiers only.
+**Record sources.** The extension looks a record up by its identifier, and you choose where to look. Set one or more sources in the popup, one per line. The extension tries them top to bottom and uses the first source that has the record. Extra sources are mirrors: if one host is down, the next answers. A record is always verified by its hash against the bar. The source is never trusted: a mirror can only fail to verify, never forge a match. The source is your choice because the hash is the authority, not the host.
+
+**How to point a source.** A source is a base URL. The extension appends `<identifier>.json`, then `<identifier>.soul`. If a host keeps each record in its own folder, put `{id}` in the source and the extension expands it to the identifier. Two examples:
+
+- A flat host: `https://your-host.example/` fetches `https://your-host.example/<id>.json`.
+- The Internet Archive: `https://archive.org/download/{id}/` fetches `https://archive.org/download/<id>/<id>.json` (Internet Archive keeps each item in its own folder, so it needs the `{id}` form).
+
+Set the per-source timeout to control how long the extension waits before it tries the next source. Clear the field to read identifiers only, with no verification.
 
 For the design and UX rationale, see `docs/plans/extension.md` and the mockup beside it.
 

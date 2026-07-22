@@ -39,18 +39,18 @@ WHAT YOU SEE
 
 THE VERDICTS
 
-• VERIFIED — the record matches the image by content hash. The data is intact and belongs to these pixels.
+• VERIFIED — the record matches the image by content hash. The data is intact, and it matches these pixels.
 • IDENTIFIED — the extension read the bar and found the record. The identity is confirmed. This record uses a hash model the extension does not implement (it checks the open model). The extension cannot check this record's integrity. This is not tampering.
 • ALTERED — the record does not match. The data changed, or it is the wrong record.
 • NO RECORD — the bar is valid, but no record was found at your sources.
 
 RECORD SOURCES (MIRRORS)
 
-You choose where records are looked up. List one or more sources; the extension tries them top to bottom and uses the first that has the record. So if one host is down, the next answers. A record is always verified by its hash against the bar — the source is never trusted. A fresh install includes two public mirrors, the Internet Archive and souls.mememage.art. Change or clear them any time. Set a per-source timeout to control how long the extension waits before it tries the next source.
+You choose where records are looked up. List one or more sources. The extension tries them top to bottom, and uses the first that has the record. If one host is down, the next answers. A record is always verified by its hash against the bar. The source is never trusted: a mirror can only fail to verify, never forge a match. You can change or clear the sources at any time. Set a per-source timeout to control how long the extension waits before it tries the next source.
 
 PRIVACY
 
-The extension collects nothing. No analytics, no telemetry, no account. Image decoding happens in your browser. The only network requests are the image bytes (usually a cache hit) and — only when you click — a record lookup from the sources you configured. Full policy: https://mememage.art/privacy
+The extension collects nothing. No analytics, no telemetry, no account. Image decoding happens in your browser. The extension makes only two kinds of request. It reads the image bytes (usually a cache hit). When you click, it looks up a record from the sources you configured. Full policy: https://mememage.art/privacy
 
 OPEN SOURCE
 
