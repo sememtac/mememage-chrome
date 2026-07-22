@@ -138,13 +138,14 @@ def main():
             f = os.path.join(OUT, "4-verified.png")
             page.screenshot(path=f); shots.append(f)
 
-            # --- Shot 3: the toolbar popup (settings) ----------------------------
+            # --- Shot 3: the toolbar popup (fresh state — empty sources so the
+            #     greyed placeholder shows; the extension ships no default sources) ---
+            sw.evaluate("() => chrome.storage.sync.remove('sources')")
             ext_id = sw.url.split("/")[2]
             pop = ctx.new_page()
             pop.set_viewport_size({"width": 360, "height": 640})
             pop.goto("chrome-extension://%s/popup.html" % ext_id)
             pop.wait_for_selector("#sources")
-            pop.fill("#sources", "https://souls.mememage.art/\nhttps://archive.org/download/{id}/")
             pop.wait_for_timeout(400)
             pop.locator("body").screenshot(path=os.path.join(OUT, "_popup_raw.png"))
             pop.close()
