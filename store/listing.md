@@ -1,7 +1,8 @@
 # Chrome Web Store listing — Mememage extension
 
 Copy-paste source for the CWS developer console. Version 1.0.0.
-Publisher: **Catmemes** · Contact: andy.xiao@gmail.com · Privacy: https://mememage.art/privacy
+Publisher: **Catmemes** · Public contact: github.com/sememtac/mememage-chrome/issues · Privacy: https://mememage.art/privacy
+(The CWS developer-account contact email is a private Google-account setting — required by Google, not shown publicly. Public questions funnel to the repo issues.)
 
 ---
 
