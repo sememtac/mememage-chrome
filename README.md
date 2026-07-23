@@ -1,5 +1,7 @@
 # Mememage — Chrome extension
 
+**[Install from the Chrome Web Store](https://chromewebstore.google.com/detail/mememage/iibfeggbpigkojefaellhpiiklfanhdc)** &middot; [mememage.art](https://mememage.art)
+
 See and verify Mememage provenance while you browse. The extension puts a small M/Y/C **marker** on any image whose bar decodes. Click the marker to see the image's identifier and content hash. To run a thorough check on any image, right-click it and choose **Verify with Mememage**. This deep scan also finds relocated and pasted bars. Everything runs on your machine, by math alone. The extension uses the vendored `mememage` SDK (synced verbatim from `packaging/js`). It has no bar logic of its own.
 
 By default, the marker shows only while your cursor is over the image. You can set this to hover, always, or off. The marker sits directly above the bar, centered on a color barrier: the M/Y/C block on the left, or the C/Y/M block on the right. The "anchor on" setting picks which side. An image can carry more than one bar, stamped by different parties at different heights. Each bar gets its own marker, and a click verifies that one bar. The settings are in the **toolbar popup** (click the M/Y/C icon).

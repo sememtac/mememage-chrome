@@ -43,6 +43,23 @@ class Handler(http.server.SimpleHTTPRequestHandler):
             self.end_headers()
             self.wfile.write(data)
             return
+        if self.path.split("?")[0].endswith("/img/swblocked.png"):
+            # Regression for the same-origin re-encode fallback: the PAGE's <img> load
+            # (Sec-Fetch-Dest: image) gets the barred PNG, but the extension SW's fetch
+            # (empty dest) is refused with 403 — so detection must fall back to an in-page
+            # canvas re-encode. Stands in for a self-signed-TLS / auth-gated image the SW
+            # cannot fetch but the page already holds (the localhost:8443 dashboard case).
+            if self.headers.get("Sec-Fetch-Dest") == "image":
+                data = open(os.path.join(DIR, "img", "verified.png"), "rb").read()
+                self.send_response(200)
+                self.send_header("Content-Type", "image/png")
+                self.send_header("Content-Length", str(len(data)))
+                self.send_header("Vary", "Sec-Fetch-Dest")
+                self.end_headers()
+                self.wfile.write(data)
+            else:
+                self.send_error(403)
+            return
         super().do_GET()
 
     def log_message(self, *a):

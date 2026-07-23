@@ -20,8 +20,9 @@
 // network is fetching <source>/<identifier>.json from the record source the USER
 // configured, and only when they click.
 
-import { decode, verify, loadPixels, extractBars,
+import { loadPixels, extractBars,
          computeContentHash, isSupportedHashVersion } from "./vendor/mememage/index.js";
+import { createResolver } from "./vendor/mememage-resolver.js";
 
 const MIN_W = 200, MIN_H = 48;          // passive gate: smaller can't carry a readable bar
 const scanCache = new Map();            // url -> fast-scan result (best-effort; SW may sleep)
@@ -113,71 +114,9 @@ async function timeoutMs() {
   return isFinite(n) && n > 0 ? n : DEFAULT_TIMEOUT_MS;
 }
 
-function expandBase(base, identifier) {
-  return base.replace(/\{id\}/g, identifier).replace(/\/+$/, "");
-}
-
-// Probe ONE source. Returns { record, url } on a hit, { notFound: true } when the
-// host answered but has neither <id>.json nor <id>.soul, or { blocked, error } when
-// the host timed out, did not respond, or returned a non-404 status. On a blocked
-// host the .soul retry is skipped — the same host is down, so move to the next mirror.
-async function fetchFromSource(base, identifier, ms) {
-  const root = expandBase(base, identifier);
-  for (const ext of ["json", "soul"]) {
-    const url = root + "/" + identifier + "." + ext;
-    let resp;
-    try {
-      resp = await fetch(url, { credentials: "omit", signal: AbortSignal.timeout(ms) });
-    } catch (e) {
-      const timedOut = e && (e.name === "TimeoutError" || e.name === "AbortError");
-      return { blocked: true, error: timedOut
-        ? "timed out after " + (ms / 1000) + "s"
-        : "no response (unreachable, or blocked)" };
-    }
-    if (resp.ok) {
-      try { return { record: await resp.json(), url: url }; }
-      catch (e) { return { blocked: true, error: "returned data that is not JSON" }; }
-    }
-    if (resp.status !== 404) return { blocked: true, error: "status " + resp.status };
-    // 404 -> this host answered but lacks this extension; try .soul, then next source
-  }
-  return { notFound: true };
-}
-
-// Walk the mirror list; the first source with the record wins. On total failure,
-// report enough to tell "none had it" (every host answered 404) apart from "none
-// answered" (timeout / unreachable / bad status on one or more).
-async function resolveRecord(identifier) {
-  const sources = await sourceList();
-  if (!sources.length) return { noSource: true };
-  const ms = await timeoutMs();
-  let anyNotFound = false, anyBlocked = false, lastError = null;
-  for (const base of sources) {
-    const r = await fetchFromSource(base, identifier, ms);
-    if (r.record) return { record: r.record, url: r.url, source: base };
-    if (r.notFound) anyNotFound = true;
-    else if (r.blocked) { anyBlocked = true; lastError = r.error; }
-  }
-  return { notFound: true, tried: sources.length,
-           anyNotFound: anyNotFound, anyBlocked: anyBlocked, lastError: lastError };
-}
-
-// One-line summary of a total-failure resolveRecord result, for the card.
-function triedSummary(res) {
-  const n = res.tried || 0;
-  const many = n === 1 ? "1 source" : n + " sources";
-  if (res.anyBlocked && !res.anyNotFound) {
-    return "Tried " + many + ". No source responded (" + (res.lastError || "blocked") + ").";
-  }
-  if (res.anyBlocked && res.anyNotFound) {
-    return "Tried " + many + ". No source had the record, and one or more did not respond (" +
-           (res.lastError || "blocked") + ").";
-  }
-  return "Tried " + many + ". No source has a record for this identifier.";
-}
-
 // Decode only (right-click entry) — every bar with its position, same shape as
-// fastScan. No record fetch: the card offers that as a command.
+// fastScan. No record fetch: the card offers that as a command. This is DECODE-PROXY
+// (the detector's deep scan), not resolution — it stays in the SW alongside fastScan.
 async function runDecode(url) {
   try {
     const src = await pixelsFor(url);
@@ -193,51 +132,21 @@ async function runDecode(url) {
   } catch (e) { return { found: false, error: String((e && e.message) || e) }; }
 }
 
-// Fetch-record command — by identifier (the card already holds it). Returns the URL
-// that answered so the card can link to the record in a new tab.
-async function runFetchRecord(identifier) {
-  const res = await resolveRecord(identifier);
-  if (res.noSource) return { noSource: true };
-  if (res.record) return { ok: true, url: res.url, source: res.source };
-  return { notFound: true, detail: triedSummary(res) };
-}
-
-// Verify a SPECIFIC bar the card already decoded (identifier + the hash stamped in its
-// pixels). Works for every bar in a multi-bar image, not just the bottom one: fetch the
-// record for this identifier, recompute its content hash, compare to the bar's. No pixel
-// re-decode — the bar's hash is authoritative and already in hand. Mirrors verify()'s
-// WITNESSED logic (computeContentHash + the hash_version support gate).
-async function runVerifyBar(identifier, contentHash) {
-  const base = { identifier: identifier, contentHash: contentHash };
-  const res = await resolveRecord(identifier);
-  if (res.noSource) return { state: "nosource", ...base };
-  if (!res.record) {
-    // A blocked source is a fetch failure (error), not an absence (norecord).
-    const summary = triedSummary(res);
-    return res.anyBlocked ? { state: "error", ...base, reason: summary }
-                          : { state: "norecord", ...base, detail: summary };
-  }
-
-  const record = res.record, recordUrl = res.url, srcBase = res.source;
-  if (!isSupportedHashVersion(record)) {
-    return { state: "unsupported", ...base, source: srcBase, recordUrl: recordUrl,
-             detail: "The record uses hash model " + JSON.stringify(record && record.hash_version) +
-                     ". The extension checks the open model. It cannot verify this record's integrity here. " +
-                     "This is not tampering." };
-  }
-  const recomputed = await computeContentHash(record);
-  if (recomputed !== contentHash) {
-    return { state: "altered", ...base, source: srcBase, recordUrl: recordUrl,
-             detail: "Hash mismatch. The bar has " + contentHash + ". The record computes to " + recomputed + "." };
-  }
-  return { state: "verified", ...base, source: srcBase, recordUrl: recordUrl };
-}
+// Record resolution + verify now live in the mememage-resolver package (vendored). The
+// SW is its adapter: inject the privileged fetch, the SDK's verify math, and the live
+// config — sources + per-source timeout, read fresh from chrome.storage on each call.
+const resolver = createResolver({
+  fetch: (url, init) => fetch(url, init),
+  verifyMath: { computeContentHash, isSupportedHashVersion },
+  sources: sourceList,       // async () => string[]  (fresh each call)
+  timeout: timeoutMs,        // async () => number
+});
 
 chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
   if (msg && msg.t === "scan") { fastScan(msg.url).then(sendResponse); return true; }
   if (msg && msg.t === "decode") { runDecode(msg.url).then(sendResponse); return true; }
-  if (msg && msg.t === "verify") { runVerifyBar(msg.identifier, msg.contentHash).then(sendResponse); return true; }
-  if (msg && msg.t === "fetchrec") { runFetchRecord(msg.identifier).then(sendResponse); return true; }
+  if (msg && msg.t === "verify") { resolver.verify({ identifier: msg.identifier, contentHash: msg.contentHash }).then(sendResponse); return true; }
+  if (msg && msg.t === "fetchrec") { resolver.fetchRecord(msg.identifier).then(sendResponse); return true; }
   if (msg && msg.t === "openOptions") {
     // Settings live in the toolbar popup. openPopup needs a user-gesture chain Chrome
     // doesn't extend across this message, so fall back to the popup in a tab.

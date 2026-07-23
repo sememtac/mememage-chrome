@@ -327,6 +327,19 @@ def main():
             page.evaluate("() => { ['mm-lazy','mm-carousel'].forEach(id=>{const e=document.getElementById(id); if(e)e.remove();}); window.scrollTo(0,0); }")
             page.wait_for_timeout(300)
 
+            # SW-blocked / same-origin re-encode fallback: /img/swblocked.png serves the
+            # barred PNG to the page's <img> but 403s the extension SW's fetch, so
+            # detection must fall back to an in-page canvas re-encode (the self-signed-TLS
+            # localhost dashboard case). Regression guard for that fix.
+            page.evaluate("""(base) => { const i=document.createElement('img'); i.id='mm-swblocked';
+                i.style.cssText='width:440px;display:block;margin-top:24px'; i.src = base+'swblocked.png';
+                document.body.appendChild(i); i.scrollIntoView({block:'center'}); }""", base)
+            page.wait_for_timeout(2500)
+            check("SW-blocked image detected via in-page re-encode fallback (%s)" % markers_over('mm-swblocked'),
+                  markers_over('mm-swblocked') == 1)
+            page.evaluate("() => { const e=document.getElementById('mm-swblocked'); if(e)e.remove(); window.scrollTo(0,0); }")
+            page.wait_for_timeout(300)
+
             # NEW SURFACES: <canvas> (re-encoded to a data URL for the SW) and CSS
             # background-image (SW fetches the bg URL) now get markered too.
             page.evaluate("() => document.getElementById('cv').scrollIntoView({block:'center'})")

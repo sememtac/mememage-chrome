@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Mememage",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Spot and verify Mememage-marked images while you browse. A marker appears on each one. Everything runs in your browser.",
   "permissions": [
     "contextMenus",
@@ -20,6 +20,7 @@
         "<all_urls>"
       ],
       "js": [
+        "vendor/mememage-detector.js",
         "detector.js",
         "content.js"
       ],
